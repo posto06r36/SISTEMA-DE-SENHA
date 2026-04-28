@@ -1,0 +1,70 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: tickets
+    // Document ID: auto-generated
+    // Fields:
+    //   - number: integer (required) - The ticket number
+    //   - type: string (required, ['Normal', 'Prioritário', 'Cadastro Único', 'Identificação']) - Service type
+    //   - status: string (required, ['waiting', 'calling', 'finished', 'canceled'])
+    //   - counter: string (optional) - The desk/counter name
+    //   - createdAt: timestamp (required)
+    //   - calledAt: timestamp (optional)
+    //   - finishedAt: timestamp (optional)
+    //
+    // Collection: settings
+    // Document ID: global
+    // Fields:
+    //   - lastNumber: integer (required) - Last issued number
+    //   - lastDate: string (required) - Last date issued (YYYY-MM-DD)
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.email == "joseosiel23@gmail.com" && request.auth.token.email_verified == true);
+    }
+
+    function isValidTicket(data) {
+      return data.keys().hasAll(['number', 'type', 'status', 'createdAt']) &&
+             data.number is int &&
+             data.type in ['Normal', 'Prioritário', 'Cadastro Único', 'Identificação'] &&
+             data.status in ['waiting', 'calling', 'finished', 'canceled'] &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidSettings(data) {
+      return data.keys().hasAll(['lastNumber', 'lastDate']) &&
+             data.lastNumber is int &&
+             data.lastDate is string;
+    }
+
+    // Rules
+    
+    match /tickets/{ticketId} {
+      // Display and Kiosk need to see tickets
+      allow read: if true;
+      
+      // Kiosk creates tickets, Attendants update tickets
+      // Relaxed for demo to ensure functionality
+      allow create, update: if true;
+    }
+
+    match /settings/global {
+      // Kiosk and Display need to see settings
+      allow read: if true;
+      
+      // Kiosk needs to increment lastNumber
+      allow create, update: if true;
+    }
+  }
+}

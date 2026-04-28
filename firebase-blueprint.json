@@ -1,0 +1,70 @@
+{
+  "entities": {
+    "Ticket": {
+      "title": "Ticket",
+      "description": "Represents a queue ticket in the distribution system.",
+      "type": "object",
+      "properties": {
+        "number": {
+          "type": "integer",
+          "description": "The sequential number of the ticket."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["Normal", "Prioritário"],
+          "description": "The type of service (Normal or Priority)."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["waiting", "calling", "finished", "canceled"],
+          "description": "The current status of the ticket."
+        },
+        "counter": {
+          "type": "string",
+          "description": "The counter or desk where the ticket is being served."
+        },
+        "citizenName": {
+          "type": "string",
+          "description": "The name of the person being called."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the ticket was created."
+        },
+        "calledAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the ticket was called to a counter."
+        }
+      },
+      "required": ["number", "type", "status", "createdAt"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Global settings for the queue system.",
+      "type": "object",
+      "properties": {
+        "lastNumber": {
+          "type": "integer",
+          "description": "The last ticket number issued today."
+        },
+        "lastDate": {
+          "type": "string",
+          "description": "The date when the last ticket was issued (YYYY-MM-DD)."
+        }
+      },
+      "required": ["lastNumber", "lastDate"]
+    }
+  },
+  "firestore": {
+    "/tickets/{ticketId}": {
+      "schema": "Ticket",
+      "description": "Collection of all tickets issued."
+    },
+    "/settings/global": {
+      "schema": "Settings",
+      "description": "Global configuration for the system."
+    }
+  }
+}
