@@ -21,4 +21,5 @@ export interface Ticket {
 
 export interface Settings {
   lastNumber: number;
+  lastDate?: string;
 }

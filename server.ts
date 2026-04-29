@@ -33,9 +33,10 @@ async function saveDb(data: any) {
 
 async function startServer() {
   const app = express();
-  const PORT = process.env.PORT || 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
-  app.use(express.json());
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
   // Helper to get all tickets
   app.get("/api/tickets", async (req, res) => {
@@ -138,12 +139,13 @@ async function startServer() {
       const db = await getDb();
       
       db.settings = {
-        lastNumber: lastNumber.toString(),
-        lastDate
+        ...db.settings,
+        lastNumber: lastNumber?.toString() ?? db.settings.lastNumber,
+        lastDate: lastDate ?? db.settings.lastDate
       };
       
       await saveDb(db);
-      res.json({ success: true });
+      res.json({ success: true, settings: db.settings });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
